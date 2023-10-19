@@ -5,10 +5,17 @@
 
 package com.koibots.robot;
 
+import com.ctre.phoenix.motorcontrol.VictorSPXControlMode;
+import com.ctre.phoenix.motorcontrol.can.VictorSPX;
+import com.ctre.phoenix.motorcontrol.can.VictorSPXConfiguration;
+import com.ctre.phoenix.motorcontrol.can.VictorSPXPIDSetConfiguration;
 import edu.wpi.first.hal.DriverStationJNI;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.util.WPIUtilJNI;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.internal.DriverStationModeThread;
 
 
@@ -17,120 +24,37 @@ import edu.wpi.first.wpilibj.internal.DriverStationModeThread;
  * The VM is configured to automatically run this class. If you change the name of this class or the
  * package after creating this project, you must also update the build.gradle file in the project.
  */
-public class Robot extends RobotBase
-{
-    public void robotInit() {}
-    
-    
-    public void disabled() {}
-    
-    
-    public void autonomous() {}
-    
-    
-    public void teleop() {}
-    
-    
-    public void test() {}
-    
-    
-    private volatile boolean exit;
-    
-    
-    @Override
-    public void startCompetition()
-    {
-        robotInit();
-        
-        DriverStationModeThread modeThread = new DriverStationModeThread();
-        
-        int event = WPIUtilJNI.createEvent(false, false);
-        
-        DriverStation.provideRefreshedDataEventHandle(event);
-        
-        // Tell the DS that the robot is ready to be enabled
-        DriverStationJNI.observeUserProgramStarting();
-        
-        while (!Thread.currentThread().isInterrupted() && !exit)
-        {
-            if (isDisabled())
-            {
-                modeThread.inDisabled(true);
-                disabled();
-                modeThread.inDisabled(false);
-                while (isDisabled())
-                {
-                    try
-                    {
-                        WPIUtilJNI.waitForObject(event);
-                    }
-                    catch (InterruptedException e)
-                    {
-                        Thread.currentThread().interrupt();
-                    }
-                }
-            }
-            else if (isAutonomous())
-            {
-                modeThread.inAutonomous(true);
-                autonomous();
-                modeThread.inAutonomous(false);
-                while (isAutonomousEnabled())
-                {
-                    try
-                    {
-                        WPIUtilJNI.waitForObject(event);
-                    }
-                    catch (InterruptedException e)
-                    {
-                        Thread.currentThread().interrupt();
-                    }
-                }
-            }
-            else if (isTest())
-            {
-                modeThread.inTest(true);
-                test();
-                modeThread.inTest(false);
-                while (isTest() && isEnabled())
-                {
-                    try
-                    {
-                        WPIUtilJNI.waitForObject(event);
-                    }
-                    catch (InterruptedException e)
-                    {
-                        Thread.currentThread().interrupt();
-                    }
-                }
-            }
-            else
-            {
-                modeThread.inTeleop(true);
-                teleop();
-                modeThread.inTeleop(false);
-                while (isTeleopEnabled())
-                {
-                    try
-                    {
-                        WPIUtilJNI.waitForObject(event);
-                    }
-                    catch (InterruptedException e)
-                    {
-                        Thread.currentThread().interrupt();
-                    }
-                }
-            }
-        }
-        
-        DriverStation.removeRefreshedDataEventHandle(event);
-        modeThread.close();
+public class Robot extends TimedRobot {
+    VictorSPX motor1;
+    VictorSPX motor2;
+    VictorSPXConfiguration motorConfig = new VictorSPXConfiguration();
+
+    NetworkTableInstance nt = NetworkTableInstance.getDefault();
+    NetworkTable table;
+
+    public void robotInit() {
+        motor1 = new VictorSPX(0);
+        motor2 = new VictorSPX(1);
+
+        motor2.follow(motor1);
+
+        table = nt.getTable("Inputs");
     }
     
-    
-    @Override
-    public void endCompetition()
-    {
-        exit = true;
+
+    public void disabled() {
+        motor1.set(VictorSPXControlMode.PercentOutput, 0);
+    }
+
+
+    public void autonomous() {
+        double height = table.getEntry("Height").getDouble(0);
+        double targetDistance = table.getEntry("Distance").getDouble(4);
+
+        double flywheelVelocity;
+
+        // R =
+
+        motor1.set(VictorSPXControlMode.Velocity, flywheelVelocity);
     }
 }
