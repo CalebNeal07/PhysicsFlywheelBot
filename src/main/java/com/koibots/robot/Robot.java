@@ -32,6 +32,8 @@ public class Robot extends TimedRobot {
     NetworkTableInstance nt = NetworkTableInstance.getDefault();
     NetworkTable table;
 
+    final double G_fps = 32.1741;
+    final double theta_rad = StrictMath.PI / 4;
     public void robotInit() {
         motor1 = new VictorSPX(0);
         motor2 = new VictorSPX(1);
@@ -51,9 +53,7 @@ public class Robot extends TimedRobot {
         double height = table.getEntry("Height").getDouble(0);
         double targetDistance = table.getEntry("Distance").getDouble(4);
 
-        double flywheelVelocity;
-
-        // R =
+        double flywheelVelocity = StrictMath.sqrt((G_fps * targetDistance) / (StrictMath.sin(2 * theta_rad)));
 
         motor1.set(VictorSPXControlMode.Velocity, flywheelVelocity);
     }
